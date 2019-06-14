@@ -1,0 +1,2 @@
+model_checkpoint_path: "C:\\pyProject\\sam\\chatbot01\\albus-bot\\model.tflearn"
+all_model_checkpoint_paths: "C:\\pyProject\\sam\\chatbot01\\albus-bot\\model.tflearn"

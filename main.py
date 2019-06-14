@@ -6,6 +6,7 @@ import tensorflow as tf
 import random
 import json
 
+
 stemmer = LancasterStemmer()
 with open("intents.json")as file:
     data = json.load(file)
@@ -15,7 +16,7 @@ print(data)
 words = []
 labels = []
 docs_x= []
-docs_y
+docs_y=[]
 
 for intent in data["intents"]:
     for pattern in intent["patterns"]:
@@ -26,7 +27,7 @@ for intent in data["intents"]:
 
     if intent["tag"] not in labels:
         labels.append(intent["tag"])
-words = [stammer.stem(w.lower()) for w in words if w != "?"]
+words = [stemmer.stem(w.lower()) for w in words if w != "?"]
 words = sorted(list(set(words)))
 
 labels= sorted(labels)
@@ -53,4 +54,17 @@ for x, doc in enumerate(docs_x):
     output.append(output_row)
 
 traning = numpy.array(traning)
-output = np.array(output)
+output = numpy.array(output)
+
+tf.reset_default_graph()
+
+net = tflearn.input_data(shape=[None,len(traning[0])])
+net = tflearn.fully_connected(net, 8)
+net = tflearn.fully_connected(net, 8)
+net = tflearn.fully_connected(net, len(output[0]),activation="softmax")
+net = tflearn.regression(net)
+
+model = tflearn.DNN(net)
+model.fit(traning, output, n_epoch=1000, batch_size=8, show_metric=True)
+model.save("model.tflearn")
+
