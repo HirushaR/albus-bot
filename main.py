@@ -5,6 +5,7 @@ import tflearn
 import tensorflow as tf
 import random
 import json
+import pickle
 
 
 stemmer = LancasterStemmer()
@@ -12,49 +13,54 @@ with open("intents.json")as file:
     data = json.load(file)
 
 print(data)
+try:
+    with open("data.pickle","rd") as f:
+        words, labels, traning, output = pickle.load(f)
+except:
+    words = []
+    labels = []
+    docs_x= []
+    docs_y=[]
 
-words = []
-labels = []
-docs_x= []
-docs_y=[]
+    for intent in data["intents"]:
+        for pattern in intent["patterns"]:
+            wrds = nltk.word_tokenize(pattern)
+            words.extend(wrds)
+            docs_x.append(wrds)
+            docs_y.append(intent["tag"])
 
-for intent in data["intents"]:
-    for pattern in intent["patterns"]:
-        wrds = nltk.word_tokenize(pattern)
-        words.extend(wrds)
-        docs_x.append(wrds)
-        docs_y.append(intent["tag"])
+        if intent["tag"] not in labels:
+            labels.append(intent["tag"])
+    words = [stemmer.stem(w.lower()) for w in words if w != "?"]
+    words = sorted(list(set(words)))
 
-    if intent["tag"] not in labels:
-        labels.append(intent["tag"])
-words = [stemmer.stem(w.lower()) for w in words if w != "?"]
-words = sorted(list(set(words)))
+    labels= sorted(labels)
 
-labels= sorted(labels)
+    traning = []
+    output= []
 
-traning = []
-output= []
+    out_empty = [ 0 for _ in range(len(labels))]
 
-out_empty = [ 0 for _ in range(len(labels))]
+    for x, doc in enumerate(docs_x):
+        bag = []
 
-for x, doc in enumerate(docs_x):
-    bag = []
+        wrds =[stemmer.stem(w) for w in doc]
+        for w in words:
+            if w in wrds:
+                bag.append(1)
+            else:
+                bag.append(0)
 
-    wrds =[stemmer.stem(w) for w in doc]
-    for w in words:
-        if w in wrds:
-            bag.append(1)
-        else:
-            bag.append(0)
+        output_row = out_empty[:]
+        output_row[labels.index(docs_y[x])] = 1
 
-    output_row = out_empty[:]
-    output_row[labels.index(docs_y[x])] = 1
+        traning.append(bag)
+        output.append(output_row)
 
-    traning.append(bag)
-    output.append(output_row)
-
-traning = numpy.array(traning)
-output = numpy.array(output)
+    traning = numpy.array(traning)
+    output = numpy.array(output)
+    with open("data.pickle", "wb") as f:
+        pickle.dump((words, labels, traning, output), f)
 
 tf.reset_default_graph()
 
@@ -65,6 +71,37 @@ net = tflearn.fully_connected(net, len(output[0]),activation="softmax")
 net = tflearn.regression(net)
 
 model = tflearn.DNN(net)
-model.fit(traning, output, n_epoch=1000, batch_size=8, show_metric=True)
-model.save("model.tflearn")
+try:
+    model.load("model.tflearn")
+except:
+    model.fit(traning, output, n_epoch=1000, batch_size=8, show_metric=True)
+    model.save("model.tflearn")
 
+def bag_of_words(s, words):
+    bag = [0 for _ in range(len(words))]
+    s_words =nltk.word_tokenize(s)
+    s_words = [stemmer.stem(word.lower()) for word in s_words]
+
+    for se in s_words:
+        for i, w in enumerate(words):
+            if w == se:
+                bag[i] = 1
+
+    return numpy.array(bag)
+
+def chat():
+    print("start taking with bot!")
+    while True:
+        inp = input("you: ")
+        if inp.lower() == "quit":
+            break
+        result = model.predict([bag_of_words(inp, words)])
+        result_index = numpy.argmax(result)
+        tag = labels[result_index]#get the tag what the content is
+
+        for tg in data["intents"]:
+            if tg['tag'] == tag:
+                responses = tg['responses']
+                print(random.choice(responses))
+
+chat()

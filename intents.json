@@ -13,13 +13,13 @@
   {
     "tag": "age",
     "patterns": ["how old","how old are you","what is your age","age?"],
-    "response": ["i am 22 years old!","22 years young!"],
+    "responses": ["i am 22 years old!","22 years young!"],
     "context_set": ""
   },
   {
     "tag": "name",
     "patterns": ["what is your name","what should i call you","what is your name?","name?"],
-    "response": ["You can call me albus","im albus"],
+    "responses": ["You can call me albus","im albus"],
     "context_set": ""
   }
 ]
