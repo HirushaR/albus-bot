@@ -1,0 +1,47 @@
+{"intents": [
+  {"tag": "greeting",
+  "patterns":["Hi","How are you","Is anyone there?","hello","Good day","Whats up"],
+  "responses": ["Hello!","Good to see you again!","Hi there,How can i help you"],
+   "context_set":""
+  },
+  {
+    "tag": "goodbye",
+    "patterns": ["cya","see you later","goodbye","i am leaving","have a good day"],
+    "responses": ["sad to see you go :(","talk to you later","goodbye!"],
+    "context_set": ""
+  },
+  {
+    "tag": "age",
+    "patterns": ["how old","how old are you","what is your age","age?"],
+    "response": ["i am 22 years old!","22 years young!"],
+    "context_set": ""
+  },
+  {
+    "tag": "name",
+    "patterns": ["what is your name","what should i call you","what is your name?","name?"],
+    "response": ["You can call me albus","im albus"],
+    "context_set": ""
+  }
+]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
